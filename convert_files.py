@@ -40,7 +40,8 @@ def process_html_file(filepath):
             html_content = file.read()
         text = convert_html_to_text(html_content)
         if text:
-            with open(filepath.replace('.html', '.txt'), 'w', encoding='utf-8') as file:
+            txt_filepath = filepath.rsplit('.', 1)[0] + '.txt'  # This handles both .html and .htm extensions
+            with open(txt_filepath, 'w', encoding='utf-8') as file:
                 file.write(text)
             logging.info(f"Converted {os.path.basename(filepath)} to text")
     except Exception as e:
@@ -59,7 +60,7 @@ def convert_files_in_directory(directory):
     for filename in os.listdir(directory):
         if not os.path.isfile(os.path.join(directory, filename)):
             continue
-        if filename.endswith('.html'):
+        if filename.endswith('.html') or filename.endswith('.htm'):
             process_html_file(os.path.join(directory, filename))
         elif filename.endswith('.pdf'):
             process_pdf_file(os.path.join(directory, filename))
