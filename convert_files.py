@@ -53,6 +53,25 @@ def convert_files_in_directory(directory):
                 logging.info(f"Converted {filename} to text")
 
 
+def concatenate_text_files(directory):
+    # Extract the directory name to use as the output file name
+    directory_name = os.path.basename(os.path.normpath(directory))
+    output_file = os.path.join(directory, directory_name + "_concatenated.txt")
+
+    text_files = [f for f in os.listdir(directory) if f.endswith('.txt')]
+    text_files.sort()  # Sorting the files by name
+
+    with open(output_file, 'w') as outfile:
+        for filename in text_files:
+            if filename == os.path.basename(output_file):
+                continue  # Skip the output file itself if it's in the same directory
+            outfile.write(f"----- Start of {filename} -----\n")
+            with open(os.path.join(directory, filename), 'r') as infile:
+                outfile.write(infile.read())
+                outfile.write("\n\n")
+            outfile.write(f"----- End of {filename} -----\n\n")
+
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python convert_files.py <directory>")
@@ -65,6 +84,7 @@ def main():
 
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     convert_files_in_directory(directory)
+    concatenate_text_files(directory)
 
 
 if __name__ == "__main__":
