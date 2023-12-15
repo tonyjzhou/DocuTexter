@@ -7,6 +7,8 @@ import sys
 from PyPDF2 import PdfReader
 from bs4 import BeautifulSoup
 
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
 
 def convert_html_to_text(html_content):
     try:
@@ -21,53 +23,63 @@ def convert_pdf_to_text(pdf_path):
     try:
         with open(pdf_path, 'rb') as file:
             reader = PdfReader(file)
-            num_pages = len(reader.pages)
             text = ''
             for page in reader.pages:
-                text += page.extract_text()
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text
             return text
     except Exception as e:
         logging.error(f"Error converting PDF to text: {e}")
         return None
 
 
+def process_html_file(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+        text = convert_html_to_text(html_content)
+        if text:
+            with open(filepath.replace('.html', '.txt'), 'w', encoding='utf-8') as file:
+                file.write(text)
+            logging.info(f"Converted {os.path.basename(filepath)} to text")
+    except Exception as e:
+        logging.error(f"Error processing {os.path.basename(filepath)}: {e}")
+
+
+def process_pdf_file(filepath):
+    text = convert_pdf_to_text(filepath)
+    if text:
+        with open(filepath.replace('.pdf', '.txt'), 'w', encoding='utf-8') as file:
+            file.write(text)
+        logging.info(f"Converted {os.path.basename(filepath)} to text")
+
+
 def convert_files_in_directory(directory):
     for filename in os.listdir(directory):
-        filepath = os.path.join(directory, filename)
+        if not os.path.isfile(os.path.join(directory, filename)):
+            continue
         if filename.endswith('.html'):
-            try:
-                with open(filepath, 'r') as file:
-                    html_content = file.read()
-                text = convert_html_to_text(html_content)
-                if text:
-                    with open(filepath.replace('.html', '.txt'), 'w') as file:
-                        file.write(text)
-                    logging.info(f"Converted {filename} to text")
-            except Exception as e:
-                logging.error(f"Error processing {filename}: {e}")
+            process_html_file(os.path.join(directory, filename))
         elif filename.endswith('.pdf'):
-            text = convert_pdf_to_text(filepath)
-            if text:
-                with open(filepath.replace('.pdf', '.txt'), 'w') as file:
-                    file.write(text)
-                logging.info(f"Converted {filename} to text")
+            process_pdf_file(os.path.join(directory, filename))
 
 
 def concatenate_text_files(directory):
-    # Extract the directory name to use as the output file name
     directory_name = os.path.basename(os.path.normpath(directory))
     output_file = os.path.join(directory, directory_name + "_concatenated.txt")
 
-    text_files = [f for f in os.listdir(directory) if f.endswith('.txt')]
-    text_files.sort()  # Sorting the files by name
+    text_files = [f for f in os.listdir(directory) if f.endswith('.txt') and os.path.isfile(os.path.join(directory, f))]
+    text_files.sort()
 
-    with open(output_file, 'w') as outfile:
+    with open(output_file, 'w', encoding='utf-8') as outfile:
         for filename in text_files:
             if filename == os.path.basename(output_file):
-                continue  # Skip the output file itself if it's in the same directory
+                continue
             outfile.write(f"----- Start of {filename} -----\n")
-            with open(os.path.join(directory, filename), 'r') as infile:
-                outfile.write(infile.read())
+            with open(os.path.join(directory, filename), 'r', encoding='utf-8') as infile:
+                for line in infile:
+                    outfile.write(line)
                 outfile.write("\n\n")
             outfile.write(f"----- End of {filename} -----\n\n")
 
@@ -82,7 +94,6 @@ def main():
         print(f"The specified directory {directory} does not exist.")
         sys.exit(1)
 
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     convert_files_in_directory(directory)
     concatenate_text_files(directory)
 
