@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import logging
 import os
 import sys
@@ -56,16 +57,6 @@ def process_pdf_file(filepath):
         logging.info(f"Converted {os.path.basename(filepath)} to text")
 
 
-def convert_files_in_directory(directory):
-    for filename in os.listdir(directory):
-        if not os.path.isfile(os.path.join(directory, filename)):
-            continue
-        if filename.endswith('.html') or filename.endswith('.htm'):
-            process_html_file(os.path.join(directory, filename))
-        elif filename.endswith('.pdf'):
-            process_pdf_file(os.path.join(directory, filename))
-
-
 def concatenate_text_files(directory):
     directory_name = os.path.basename(os.path.normpath(directory))
     output_file = os.path.join(directory, directory_name + "_concatenated.txt")
@@ -85,19 +76,79 @@ def concatenate_text_files(directory):
             outfile.write(f"----- End of {filename} -----\n\n")
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python convert_files.py <directory>")
-        sys.exit(1)
+def process_file(filepath):
+    if filepath.endswith('.html') or filepath.endswith('.htm'):
+        process_html_file(filepath)
+    elif filepath.endswith('.pdf'):
+        process_pdf_file(filepath)
+    else:
+        logging.error(f"Unsupported file type: {filepath}")
 
-    directory = sys.argv[1]
-    if not os.path.isdir(directory):
-        print(f"The specified directory {directory} does not exist.")
-        sys.exit(1)
-
-    convert_files_in_directory(directory)
+def process_directory(directory):
+    for filename in os.listdir(directory):
+        if not os.path.isfile(os.path.join(directory, filename)):
+            continue
+        process_file(os.path.join(directory, filename))
     concatenate_text_files(directory)
 
+
+def process_files_with_wildcard(pattern):
+    for filepath in glob.glob(pattern):
+        if os.path.isfile(filepath):
+            process_file(filepath)
+        else:
+            logging.warning(f"Skipping non-file: {filepath}")
+
+def display_help():
+    help_message = """
+    Usage: python convert_files.py <path or pattern>
+
+    This script converts HTML and PDF files to text files. It automatically detects 
+    whether the input is a directory, a single file, or multiple files using a wildcard pattern.
+
+    - If a directory is specified, all HTML and PDF files within that directory are processed.
+    - If a single file is specified, only that file is processed.
+    - If a pattern is specified (e.g., '*.pdf'), all matching files are processed.
+
+    Examples:
+        python convert_files.py /path/to/directory
+        python convert_files.py /path/to/file.pdf
+        python convert_files.py "*.html"
+
+    The script supports '.html', '.htm', and '.pdf' files. For HTML and PDF files, 
+    it generates corresponding text files. When processing directories or patterns,
+    it also creates a concatenated text file of all processed files.
+
+    Use the -h or --help flag for displaying this help message.
+    """
+    print(help_message)
+
+
+def process_files(pattern):
+    matched_files = glob.glob(pattern)
+    if not matched_files:
+        logging.error(f"No files found for the pattern: {pattern}")
+        return
+
+    for filepath in matched_files:
+        if os.path.isfile(filepath):
+            process_file(filepath)
+        else:
+            logging.warning(f"Skipping non-file: {filepath}")
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] in ("-h", "--help"):
+        display_help()
+        sys.exit(0)
+
+    path_or_pattern = sys.argv[1]
+
+    if os.path.isdir(path_or_pattern):
+        process_directory(path_or_pattern)
+    elif os.path.isfile(path_or_pattern):
+        process_file(path_or_pattern)
+    else:
+        process_files(path_or_pattern)
 
 if __name__ == "__main__":
     main()
