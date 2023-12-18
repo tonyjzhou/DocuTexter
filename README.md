@@ -1,26 +1,56 @@
-# DocuTexter
 
-## Overview
-DocuTexter is a Python tool designed to convert HTML and PDF files into plain text format. It can process individual files or an entire directory, converting each file and then concatenating the results into a single text file.
+# File Converter Script
 
-## Dependencies
-- BeautifulSoup4: For parsing HTML content.
-- PyPDF2: For reading and extracting text from PDF files.
+This Python script automates the conversion of HTML and PDF files to text files. It supports processing individual files, all files in a directory, or files matching a wildcard pattern.
 
-## Setup
-1. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+## Features
+
+- Automatically detects whether the input is a directory, a single file, or multiple files using a wildcard pattern.
+- Converts HTML and PDF files to text files.
+- Concatenates all converted text files into a single file when processing directories or patterns.
 
 ## Usage
-To use DocuTexter, run the script from the command line with a directory path as an argument. The script will process all HTML and PDF files within the specified directory.
 
+```bash
+python convert_files.py <path or pattern>
 ```
-python convert_files.py <directory>
+
+- If a directory is specified, all HTML and PDF files within that directory are processed.
+- If a single file is specified, only that file is processed.
+- If a pattern is specified (e.g., '*.pdf'), all matching files are processed.
+
+## Examples
+
+```bash
+python convert_files.py /path/to/directory
+python convert_files.py /path/to/file.pdf
+python convert_files.py "*.html"
 ```
 
-The script will create a `.txt` file for each HTML and PDF file in the directory. After processing all files, it will generate a concatenated text file containing the content of all individual text files.
+## Requirements
 
-## License
-This project is open-source and available under [MIT License](https://opensource.org/licenses/MIT).
+- Python 3
+- BeautifulSoup
+- PyPDF2
+
+## Installation
+
+Make sure Python 3 is installed on your system. If not, you can download it from [Python's official website](https://www.python.org/downloads/).
+
+To install the required packages, run:
+
+```bash
+pip install beautifulsoup4 PyPDF2
+```
+
+## Help
+
+Use the `-h` or `--help` flag to display the help message:
+
+```bash
+python convert_files.py -h
+```
+
+---
+
+For more information, please refer to the script's comments.
