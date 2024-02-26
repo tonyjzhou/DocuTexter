@@ -1,7 +1,9 @@
 
 # File Converter Script
 
-This Python script automates the conversion of HTML and PDF files to text files. It supports processing individual files, all files in a directory, or files matching a wildcard pattern.
+This Python script automates the conversion of HTML and PDF files to text files so that it can be easily processed by ChatGPT and other LLM systems. 
+
+It supports processing individual files, all files in a directory, or files matching a wildcard pattern.
 
 ## Features
 
