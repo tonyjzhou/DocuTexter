@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 
+import epub
 from PyPDF2 import PdfReader
 from bs4 import BeautifulSoup
 
@@ -35,6 +36,23 @@ def convert_pdf_to_text(pdf_path):
         return None
 
 
+def convert_epub_to_text(epub_path):
+    try:
+        book = epub.open_epub(epub_path)
+        text = ''
+        for item_id, item in book.opf.manifest.items():
+            # Ensure the type is text and the format is HTML (common in EPUB)
+            if item.media_type == 'application/xhtml+xml':
+                content = book.read_item(item)
+                soup = BeautifulSoup(content, 'html.parser')
+                text += soup.get_text() + '\n'
+        book.close()
+        return text
+    except Exception as e:
+        logging.error(f"Error converting EPUB to text: {e}")
+        return None
+
+
 def process_html_file(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
@@ -53,6 +71,15 @@ def process_pdf_file(filepath):
     text = convert_pdf_to_text(filepath)
     if text:
         with open(filepath.replace('.pdf', '.txt'), 'w', encoding='utf-8') as file:
+            file.write(text)
+        logging.info(f"Converted {os.path.basename(filepath)} to text")
+
+
+def process_epub_file(filepath):
+    # text = convert_epub_to_text(filepath)
+    text = convert_epub_to_text(filepath)
+    if text:
+        with open(filepath.replace('.epub', '.txt'), 'w', encoding='utf-8') as file:
             file.write(text)
         logging.info(f"Converted {os.path.basename(filepath)} to text")
 
@@ -81,8 +108,11 @@ def process_file(filepath):
         process_html_file(filepath)
     elif filepath.endswith('.pdf'):
         process_pdf_file(filepath)
+    elif filepath.endswith('.epub'):
+        process_epub_file(filepath)
     else:
         logging.error(f"Unsupported file type: {filepath}")
+
 
 def process_directory(directory):
     for filename in os.listdir(directory):
@@ -98,6 +128,7 @@ def process_files_with_wildcard(pattern):
             process_file(filepath)
         else:
             logging.warning(f"Skipping non-file: {filepath}")
+
 
 def display_help():
     help_message = """
@@ -136,6 +167,7 @@ def process_files(pattern):
         else:
             logging.warning(f"Skipping non-file: {filepath}")
 
+
 def main():
     if len(sys.argv) != 2 or sys.argv[1] in ("-h", "--help"):
         display_help()
@@ -149,6 +181,7 @@ def main():
         process_file(path_or_pattern)
     else:
         process_files(path_or_pattern)
+
 
 if __name__ == "__main__":
     main()
