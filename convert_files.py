@@ -134,10 +134,10 @@ def display_help():
     help_message = """
     Usage: python convert_files.py <path or pattern>
 
-    This script converts HTML and PDF files to text files. It automatically detects 
+    This script converts HTML, PDF, and EPUB files to text files. It automatically detects 
     whether the input is a directory, a single file, or multiple files using a wildcard pattern.
 
-    - If a directory is specified, all HTML and PDF files within that directory are processed.
+    - If a directory is specified, all HTML, PDF, and EPUB files within that directory are processed.
     - If a single file is specified, only that file is processed.
     - If a pattern is specified (e.g., '*.pdf'), all matching files are processed.
 
@@ -145,8 +145,9 @@ def display_help():
         python convert_files.py /path/to/directory
         python convert_files.py /path/to/file.pdf
         python convert_files.py "*.html"
+        python convert_files.py "*.epub"
 
-    The script supports '.html', '.htm', and '.pdf' files. For HTML and PDF files, 
+    The script supports '.html', '.htm', '.pdf', and '.epub' files. For HTML, PDF, and EPUB files, 
     it generates corresponding text files. When processing directories or patterns,
     it also creates a concatenated text file of all processed files.
 
